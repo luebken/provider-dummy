@@ -4,6 +4,6 @@ metadata:
   name: example
 spec:
   forProvider:
-    configurableField: test
+    id: "1006"
   providerConfigRef:
     name: example

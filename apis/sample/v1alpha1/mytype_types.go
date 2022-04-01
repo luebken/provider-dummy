@@ -25,9 +25,9 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// MyTypeParameters are the configurable fields of a MyType.
+// MyTypeParameters The id of the Vessel.
 type MyTypeParameters struct {
-	ConfigurableField string `json:"configurableField"`
+	ID string `json:"id"`
 }
 
 // MyTypeObservation are the observable fields of a MyType.

@@ -19,6 +19,7 @@ package mytype
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -46,11 +47,8 @@ const (
 	errNewClient = "cannot create new Service"
 )
 
-// A NoOpService does nothing.
-type NoOpService struct{}
-
 var (
-	newNoOpService = func(_ []byte) (interface{}, error) { return &NoOpService{}, nil }
+	newNoOpService = func(_ []byte) (APILogisticsClient, error) { return APILogisticsClient{}, nil }
 )
 
 // Setup adds a controller that reconciles MyType managed resources.
@@ -82,7 +80,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 type connector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(creds []byte) (interface{}, error)
+	newServiceFn func(creds []byte) (APILogisticsClient, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -124,7 +122,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 type external struct {
 	// A 'client' used to connect to the external resource API. In practice this
 	// would be something like an AWS SDK client.
-	service interface{}
+	service APILogisticsClient
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -134,7 +132,9 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	// These fmt statements should be removed in the real implementation.
-	fmt.Printf("Observing: %+v", cr)
+	fmt.Printf("MDL Observing for id %+v\n", cr.Spec.ForProvider.ID)
+	id, _ := strconv.ParseUint(cr.Spec.ForProvider.ID, 0, 64)
+	fmt.Printf("Vessel: %+v\n", c.service.Get(id))
 
 	return managed.ExternalObservation{
 		// Return false when the external resource does not exist. This lets
@@ -159,7 +159,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
 	}
 
-	fmt.Printf("Creating: %+v", cr)
+	fmt.Printf("MDL Creating: %+v", cr)
 
 	return managed.ExternalCreation{
 		// Optionally return any details that may be required to connect to the
@@ -174,7 +174,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errNotMyType)
 	}
 
-	fmt.Printf("Updating: %+v", cr)
+	fmt.Printf("MDL Updating: %+v", cr)
 
 	return managed.ExternalUpdate{
 		// Optionally return any details that may be required to connect to the
@@ -189,7 +189,7 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotMyType)
 	}
 
-	fmt.Printf("Deleting: %+v", cr)
+	fmt.Printf("MDL Deleting: %+v", cr)
 
 	return nil
 }

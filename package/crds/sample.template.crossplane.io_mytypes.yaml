@@ -63,12 +63,12 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: MyTypeParameters are the configurable fields of a MyType.
+                description: The id of the vessel.
                 properties:
-                  configurableField:
+                  id:
                     type: string
                 required:
-                - configurableField
+                - id
                 type: object
               providerConfigRef:
                 default:
